@@ -1,0 +1,3 @@
+import { defineConfig } from '@playwright/test';
+import { existsSync } from 'node:fs';
+export default defineConfig({testDir:'./e2e',workers:1,timeout:90_000,use:{baseURL:'http://127.0.0.1:8011',viewport:{width:1280,height:1000},launchOptions:{executablePath:process.env.CHROMIUM_EXECUTABLE_PATH??(existsSync('/usr/bin/chromium')?'/usr/bin/chromium':undefined),args:['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader']},trace:'retain-on-failure'},webServer:{command:'../.venv/bin/python ../scripts/e2e_server.py',url:'http://127.0.0.1:8011/api/health',reuseExistingServer:false,timeout:20_000}});

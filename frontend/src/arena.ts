@@ -95,7 +95,7 @@ export class Arena {
     const sky=MeshBuilder.CreateSphere('dusk-sky',{diameter:500,segments:24,sideOrientation:Mesh.BACKSIDE},this.scene);
     const shader=new ShaderMaterial('dusk-gradient',this.scene,{
       vertexSource:'precision highp float; attribute vec3 position; uniform mat4 worldViewProjection; varying vec3 p; void main(){p=position;gl_Position=worldViewProjection*vec4(position,1.0);}',
-      fragmentSource:'precision highp float; varying vec3 p; void main(){vec3 n=normalize(p);float h=clamp(n.y*2.2,0.0,1.0);vec3 color=mix(vec3(0.13,0.19,0.23),vec3(0.012,0.032,0.075),pow(h,0.55));float sun=pow(max(0.0,dot(n,normalize(vec3(-1.0,0.12,-0.7)))),14.0);color+=vec3(0.12,0.055,0.022)*sun;gl_FragColor=vec4(color,1.0);}'
+      fragmentSource:'precision highp float; varying vec3 p; void main(){vec3 n=normalize(p);float h=clamp(n.y*2.2,0.0,1.0);vec3 color=mix(vec3(0.025,0.045,0.073),vec3(0.003,0.009,0.027),pow(h,0.55));float sun=pow(max(0.0,dot(n,normalize(vec3(-1.0,0.12,-0.7)))),14.0);color+=vec3(0.055,0.021,0.008)*sun;gl_FragColor=vec4(color,1.0);}'
     },{attributes:['position'],uniforms:['worldViewProjection']});shader.backFaceCulling=false;shader.disableDepthWrite=true;sky.material=shader;sky.infiniteDistance=true;sky.isPickable=false;
   }
 
@@ -132,14 +132,16 @@ export class Arena {
     else if(t<contact){const u=(t-bounce)/(contact-bounce);this.ball.position.copyFrom(Vector3.Lerp(v(trajectory.bounce),v(trajectory.contact),u));this.ball.position.y+=.16*Math.sin(u*Math.PI);}
     else {
       if(!this.struck){this.struck=true;if(event.wicket_type!=='bowled')this.hitSound();}
-      const u=clamp((t-contact)/(event.runs>=4?3:2.2));
+      const u=clamp((t-contact)/(event.wicket_type==='caught'?3.3:event.runs>=4?3:2.2));
       if(event.wicket_type==='bowled') {
         this.ball.position.copyFrom(Vector3.Lerp(v(trajectory.contact),new Vector3(.03,.2,13.4),clamp((t-contact)/.28)));
         if(t>contact+.08)this.scene.meshes.filter(m=>m.metadata?.bail).forEach((m,i)=>{const k=clamp((t-contact-.08)/.7);m.position.copyFrom(m.metadata.home.add(new Vector3((i?1:-1)*k*.7,Math.sin(k*Math.PI)*.5-k*.65,k*1.4)));m.rotation.z=k*8;});
       } else {
-        this.ball.position.copyFrom(Vector3.Lerp(v(trajectory.contact),v(trajectory.end),u));this.ball.position.y+=Math.sin(u*Math.PI)*trajectory.arc;
+        this.ball.position.copyFrom(Vector3.Lerp(v(trajectory.contact),v(trajectory.end),u));
+        if(event.runs===6||event.wicket_type==='caught')this.ball.position.y+=Math.sin(u*Math.PI)*trajectory.arc;
+        else {const air=clamp(u/.38);this.ball.position.y=.055+(trajectory.contact[1]-.055)*(1-air)+Math.sin(air*Math.PI)*trajectory.arc;}
         const end=v(trajectory.end),nearest=this.homes.reduce((a,p,i)=>Vector3.DistanceSquared(p,end)<Vector3.DistanceSquared(this.homes[a],end)?i:a,0);
-        if(event.runs<4){const f=this.fielders[nearest],progress=smooth((t-contact-.3)/3);f.root.position.copyFrom(Vector3.Lerp(this.homes[nearest],new Vector3(end.x,0,end.z),progress));f.root.rotation.y=Math.atan2(end.x-this.homes[nearest].x,end.z-this.homes[nearest].z)+Math.PI;f.pose(progress<1?.65:0,t*9,0);}
+        if(event.runs<4){const f=this.fielders[nearest],progress=smooth((t-contact-.3)/3);f.root.position.copyFrom(Vector3.Lerp(this.homes[nearest],new Vector3(end.x,0,end.z),progress));f.root.rotation.y=Math.atan2(end.x-this.homes[nearest].x,end.z-this.homes[nearest].z)+Math.PI;f.pose(progress<1?.65:0,t*9,0,undefined,event.wicket_type==='caught'&&progress>.8);}
         if(event.runs>0&&event.runs<4&&!event.out&&t>4.15){
           const total=clamp((t-4.15)/(event.duration-4.6))*event.runs,leg=Math.min(event.runs-1,Math.floor(total)),part=total-leg,progress=leg%2?1-part:part;
           this.batter.root.position.set(-.65,0,9.2-progress*18);this.partner.root.position.set(1.2,0,-8.8+progress*18);
@@ -153,7 +155,7 @@ export class Arena {
     const hit=t>contact&&t<6.9&&event.wicket_type!=='bowled';
     if(this.mode==='aerial'){this.cameraPosition.set(18,58,22);this.cameraTarget.set(0,0,-2);this.camera.fov=.98;}
     else if(this.mode==='end-on'){this.cameraPosition.set(.4,4.5,27);this.cameraTarget.set(0,1,-5);this.camera.fov=.7;}
-    else if(!this.hasStarted){this.cameraPosition.set(28,18,32);this.cameraTarget.set(0,2,-7);this.camera.fov=.85;}
+    else if(!this.hasStarted){this.cameraPosition.set(22,12,28);this.cameraTarget.set(0,2,-7);this.camera.fov=.85;}
     else if(hit){this.cameraPosition.set(-15,13,24);this.cameraTarget.copyFrom(Vector3.Lerp(new Vector3(0,1,0),this.ball.position,.58));this.camera.fov=1.02;}
     else {this.cameraPosition.set(1.3,5.3,28);this.cameraTarget.set(0,1,-5);this.camera.fov=.78;}
   }

@@ -97,7 +97,7 @@ export class Cricketer {
     this.pose(0,0,0);
   }
 
-  pose(run: number, phase: number, swing: number, bowlingArm?: number) {
+  pose(run: number, phase: number, swing: number, bowlingArm?: number, catching=false) {
     this.body.position.y = Math.abs(Math.sin(phase*2)) * run * .055;
     this.body.rotation.x = run*.13;
     this.body.rotation.y = this.isBatter ? swing*.16 : 0;
@@ -116,6 +116,9 @@ export class Cricketer {
       if(hands) {
         wrist=new Vector3(.24+side*.025,1.13-(i*.075)*Math.cos(swing),-.13-(i*.075)*Math.sin(swing));
         elbow=new Vector3(side*.32,1.15,-.2-Math.max(0,swing)*.08);
+      } else if(catching) {
+        elbow=new Vector3(side*.28,1.6,-.12);
+        wrist=new Vector3(side*.1,1.75,-.24);
       } else if(bowlingArm!==undefined && i===1) {
         elbow=new Vector3(.24,1.43+Math.cos(bowlingArm)*.3,-Math.sin(bowlingArm)*.3);
         wrist=new Vector3(.2,1.43+Math.cos(bowlingArm)*.65,-Math.sin(bowlingArm)*.65);

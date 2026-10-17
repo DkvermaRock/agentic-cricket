@@ -51,7 +51,7 @@ export function buildStadium(scene:Scene) {
   }
   const path=Array.from({length:181},(_,i)=>new Vector3(Math.sin(i/180*Math.PI*2)*60.3*1.08,.055,Math.cos(i/180*Math.PI*2)*60.3));
   const boundary=MeshBuilder.CreateTube('boundary-rope',{path,radius:.055,tessellation:6},scene);boundary.material=rope;
-  const stands=material(scene,'stand-concrete','#3a4949'), risers=material(scene,'stand-risers','#243737'), roof=material(scene,'roof-canopy','#273638'), steel=material(scene,'structural-steel','#384c50');
+  const stands=material(scene,'stand-concrete','#3a4949'), risers=material(scene,'stand-risers','#243737'), roof=material(scene,'roof-canopy','#101a20'), steel=material(scene,'structural-steel','#384c50');
   const seatMat=material(scene,'seat-colors','#ffffff');seatMat.specularColor.set(0,0,0);
   const seat=MeshBuilder.CreateBox('seats',{width:.56,height:.31,depth:.49},scene);seat.material=seatMat;
   const spectator=MeshBuilder.CreateCapsule('crowd',{height:.65,radius:.16,tessellation:5,subdivisions:1},scene);spectator.material=seatMat;
@@ -94,7 +94,7 @@ export function buildStadium(scene:Scene) {
   }
   const screenTexture=new DynamicTexture('stadium-screen',{width:1024,height:512},scene,false);
   const screenMat=material(scene,'screen','#ffffff',.6);screenMat.diffuseTexture=screenTexture;screenMat.emissiveTexture=screenTexture;
-  const screen=MeshBuilder.CreatePlane('scoreboard-screen',{width:17,height:8.5,sideOrientation:Mesh.DOUBLESIDE},scene);screen.position.set(0,13,-83);screen.material=screenMat;
+  const screen=MeshBuilder.CreatePlane('scoreboard-screen',{width:17,height:8.5,sideOrientation:Mesh.DOUBLESIDE},scene);screen.position.set(0,13,-83);screen.rotation.y=Math.PI;screen.material=screenMat;
   const screenFrame=MeshBuilder.CreateBox('screen-frame',{width:18,height:9.5,depth:.5},scene);screenFrame.position.set(0,13,-83.4);screenFrame.material=steel;
   const updateScreen=(score:string,over:string)=>{const c=(screenTexture.getContext() as CanvasRenderingContext2D);c.fillStyle='#10262b';c.fillRect(0,0,1024,512);c.textAlign='center';c.fillStyle='#c8ecbb';c.font='bold 42px sans-serif';c.fillText('BOUNDARY',512,92);c.fillStyle='#faf3da';c.font='bold 152px sans-serif';c.fillText(score,512,300);c.fillStyle='#8daca6';c.font='32px sans-serif';c.fillText('ARCADIA XI   ·   '+over,512,402);screenTexture.update();};
   updateScreen('0 / 0','0.0 OVERS');

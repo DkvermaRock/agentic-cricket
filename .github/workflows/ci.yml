@@ -1,0 +1,46 @@
+name: Test and build the arena
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_PASSWORD: test-only-ci-password
+          POSTGRES_DB: boundary_test
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      CRICKET_TEST_POSTGRES_URL: postgresql://postgres:test-only-ci-password@127.0.0.1:55432/boundary_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: pip install uv==0.12.23
+      - run: uv sync --locked
+      - run: .venv/bin/python -m pytest -q
+      - run: npm --prefix frontend ci --no-audit --no-fund
+      - run: npm --prefix frontend run build
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm --prefix frontend run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: frontend/test-results/

@@ -65,7 +65,7 @@ def play_over(player, policy, seed, target=12):
         # Visual variation has its own RNG, independent of game results.
         visual = random.Random(seed * 31 + ball)
         angle = visual.uniform(-0.85, 0.8) if action != "pull" else visual.uniform(0.95, 1.55)
-        distance = {0: 3.0, 1: 22.0, 2: 36.0, 3: 47.0, 4: 65.0, 6: 74.0}[runs]
+        distance = {0: 3.0, 1: 22.0, 2: 36.0, 3: 47.0, 4: 68.0, 6: 74.0}[runs]
         wicket_type = ("caught" if action == "loft" or length == "short" else "bowled") if out else None
         if wicket_type == "caught":
             distance = 30.0

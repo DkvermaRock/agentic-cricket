@@ -1,20 +1,38 @@
 from concurrent.futures import ThreadPoolExecutor
-import json
+import os
+import uuid
 import threading
 
 from fastapi.testclient import TestClient
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.engine import make_url
 
 from backend.app import create_app
 from backend.game import ATTRIBUTES, cost, evaluate, play_over, train
 
 SKILLS={"power":65,"timing":60,"composure":55}
 
-@pytest.fixture
-def app(tmp_path):
-    app=create_app(tmp_path/'arena.sqlite3')
-    yield app
-    app.state.store.engine.dispose()
+@pytest.fixture(params=['sqlite']+(['postgres'] if os.environ.get('CRICKET_TEST_POSTGRES_URL') else []))
+def app(tmp_path,request):
+    if request.param=='sqlite':
+        app=create_app(tmp_path/'arena.sqlite3')
+        yield app
+        app.state.store.engine.dispose()
+        return
+    url=make_url(os.environ['CRICKET_TEST_POSTGRES_URL']).set(drivername='postgresql+psycopg')
+    assert url.host in {'127.0.0.1','localhost','::1'}, 'Tests require a disposable local PostgreSQL server'
+    name='boundary_test_'+uuid.uuid4().hex
+    admin=create_engine(url,isolation_level='AUTOCOMMIT')
+    with admin.connect() as db: db.exec_driver_sql(f'CREATE DATABASE "{name}"')
+    app=None
+    try:
+        app=create_app(url.set(database=name).render_as_string(hide_password=False))
+        yield app
+    finally:
+        if app: app.state.store.engine.dispose()
+        with admin.connect() as db: db.exec_driver_sql(f'DROP DATABASE "{name}" WITH (FORCE)')
+        admin.dispose()
 
 @pytest.fixture
 def client(app):
@@ -127,3 +145,26 @@ def test_hosted_authentication(tmp_path,monkeypatch):
             assert c.get(url).status_code==401
         assert c.get('/api/meta',auth=('cricket','test-only-long-password')).status_code==200
         assert c.get('/api/meta',headers={'Authorization':'Basic invalid'}).status_code==401
+
+def test_postgres_browser_role_has_no_row_access(app):
+    if not app.state.store.postgres:
+        pytest.skip('RLS is a PostgreSQL integration check')
+    role='boundary_role_'+uuid.uuid4().hex
+    engine=app.state.store.engine
+    with engine.begin() as db:
+        db.exec_driver_sql(f'CREATE ROLE "{role}" NOLOGIN')
+    try:
+        with engine.begin() as db:
+            db.exec_driver_sql(f'GRANT USAGE ON SCHEMA public TO "{role}"')
+            db.exec_driver_sql(f'GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA public TO "{role}"')
+            db.exec_driver_sql(f'SET LOCAL ROLE "{role}"')
+            for table in ('club','players','reports','matches'):
+                assert db.exec_driver_sql(f'SELECT count(*) FROM {table}').scalar_one()==0
+        with pytest.raises(Exception,match='row-level security'):
+            with engine.begin() as db:
+                db.exec_driver_sql(f'SET LOCAL ROLE "{role}"')
+                db.exec_driver_sql('INSERT INTO club VALUES (1,500)')
+    finally:
+        with engine.begin() as db:
+            db.exec_driver_sql(f'DROP OWNED BY "{role}"')
+            db.exec_driver_sql(f'DROP ROLE "{role}"')
