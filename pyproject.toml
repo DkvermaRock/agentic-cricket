@@ -1,0 +1,13 @@
+[project]
+name = "boundary-agent-arena"
+version = "0.2.0"
+description = "Persistent learning cricket agents with a browser-rendered 3D arena"
+requires-python = ">=3.12"
+dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "sqlalchemy>=2,<3", "psycopg[binary]>=3.2,<4"]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "httpx>=0.28,<1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

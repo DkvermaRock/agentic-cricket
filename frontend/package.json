@@ -1,0 +1,9 @@
+{
+  "name": "boundary-arena",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"dev": "vite --host 127.0.0.1", "build": "tsc --noEmit && vite build", "test:e2e": "playwright test"},
+  "dependencies": {"@babylonjs/core": "^8.0.0"},
+  "devDependencies": {"@playwright/test": "^1.55.0", "typescript": "^5.9.0", "vite": "^7.1.0"}
+}
