@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: boundary-agent-arena
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: CRICKET_REQUIRE_AUTH
+        value: "true"
+      - key: CRICKET_DEMO_USERNAME
+        value: cricket
+      - key: CRICKET_DEMO_PASSWORD
+        generateValue: true

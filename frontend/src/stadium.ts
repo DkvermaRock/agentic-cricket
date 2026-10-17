@@ -1,12 +1,20 @@
-import { Color3, DynamicTexture, Matrix, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3, VertexData } from '@babylonjs/core';
+import '@babylonjs/core/Meshes/thinInstanceMesh';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
+import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
+import { Scene } from '@babylonjs/core/scene';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { material } from './actor';
 
 function sector(scene:Scene, name:string, r0:number, r1:number, y0:number, y1:number, a0:number, a1:number, mat:StandardMaterial) {
   const point=(r:number,y:number,a:number)=>[Math.sin(a)*r,y,Math.cos(a)*r];
   const positions=[...point(r0,y0,a0),...point(r0,y0,a1),...point(r1,y1,a1),...point(r1,y1,a0)];
-  const indices=[0,2,1,0,3,2]; const normals:number[]=[]; VertexData.ComputeNormals(positions,indices,normals);
+  const indices=[0,1,2,0,2,3]; const normals:number[]=[]; VertexData.ComputeNormals(positions,indices,normals);
   const data=new VertexData(); data.positions=positions; data.indices=indices; data.normals=normals; data.uvs=[0,0,1,0,1,1,0,1];
-  const mesh=new Mesh(name,scene); data.applyToMesh(mesh); mesh.material=mat; mesh.scaling.x=1.08; mesh.freezeWorldMatrix(); return mesh;
+  const mesh=new Mesh(name,scene); data.applyToMesh(mesh); mesh.material=mat; mat.backFaceCulling=false; mesh.scaling.x=1.08; mesh.freezeWorldMatrix(); return mesh;
 }
 
 function grass(scene:Scene) {
@@ -90,8 +98,16 @@ export function buildStadium(scene:Scene) {
   const screenFrame=MeshBuilder.CreateBox('screen-frame',{width:18,height:9.5,depth:.5},scene);screenFrame.position.set(0,13,-83.4);screenFrame.material=steel;
   const updateScreen=(score:string,over:string)=>{const c=(screenTexture.getContext() as CanvasRenderingContext2D);c.fillStyle='#10262b';c.fillRect(0,0,1024,512);c.textAlign='center';c.fillStyle='#c8ecbb';c.font='bold 42px sans-serif';c.fillText('BOUNDARY',512,92);c.fillStyle='#faf3da';c.font='bold 152px sans-serif';c.fillText(score,512,300);c.fillStyle='#8daca6';c.font='32px sans-serif';c.fillText('ARCADIA XI   ·   '+over,512,402);screenTexture.update();};
   updateScreen('0 / 0','0.0 OVERS');
+  // Combine static architecture by material to avoid hundreds of terrace draws.
+  const groups=new Map<StandardMaterial,Mesh[]>();
+  for(const mesh of scene.meshes) {
+    if(mesh instanceof Mesh && /^(terrace|riser|canopy|roof-column|floodlight-mast|mast-brace|lighting-rig|floodlight)$/.test(mesh.name) && mesh.material instanceof StandardMaterial) {
+      const list=groups.get(mesh.material)??[];list.push(mesh);groups.set(mesh.material,list);
+    }
+  }
+  for(const meshes of groups.values()) if(meshes.length>1){const merged=Mesh.MergeMeshes(meshes,true,true);merged?.freezeWorldMatrix();}
   return {updateScreen};
 }
 
-import { Quaternion } from '@babylonjs/core';
+import { Quaternion } from '@babylonjs/core/Maths/math.vector';
 function QuaternionY(angle:number){return Quaternion.RotationAxis(Vector3.Up(),angle);}

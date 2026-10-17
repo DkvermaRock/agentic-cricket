@@ -1,4 +1,11 @@
-import { Color3, DynamicTexture, Mesh, MeshBuilder, Quaternion, Scene, StandardMaterial, TransformNode, Vector3 } from '@babylonjs/core';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
+import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Scene } from '@babylonjs/core/scene';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 
 export function material(scene: Scene, name: string, color: string, glow = 0): StandardMaterial {
   const m = new StandardMaterial(name, scene);

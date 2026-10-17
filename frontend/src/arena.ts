@@ -1,4 +1,17 @@
-import { Color3, Color4, DefaultRenderingPipeline, DirectionalLight, Engine, FreeCamera, HemisphericLight, ImageProcessingConfiguration, Mesh, MeshBuilder, Scene, ShaderMaterial, ShadowGenerator, Vector3 } from '@babylonjs/core';
+import '@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent';
+import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
+import { DefaultRenderingPipeline } from '@babylonjs/core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
+import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
+import { Engine } from '@babylonjs/core/Engines/engine';
+import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
+import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
+import { ImageProcessingConfiguration } from '@babylonjs/core/Materials/imageProcessingConfiguration';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
+import { Scene } from '@babylonjs/core/scene';
+import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
+import { ShadowGenerator } from '@babylonjs/core/Lights/Shadows/shadowGenerator';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Cricketer, material } from './actor';
 import { buildStadium } from './stadium';
 import type { Delivery, Match } from './types';
@@ -35,6 +48,8 @@ export class Arena {
   private previousScore='';
   private frameTimes:number[]=[];
   private quality='balanced';
+  private software=false;
+  private pipeline:DefaultRenderingPipeline;
   private onFrame:(frame:Frame)=>void;
   private sound=false;
   private audio:AudioContext|null=null;
@@ -46,7 +61,8 @@ export class Arena {
   constructor(canvas:HTMLCanvasElement,onFrame:(frame:Frame)=>void) {
     this.onFrame=onFrame;
     this.engine=new Engine(canvas,true,{preserveDrawingBuffer:true,stencil:true,powerPreference:'high-performance'},false);
-    this.engine.setHardwareScalingLevel(1/Math.min(window.devicePixelRatio,1.25));
+    this.software=/swiftshader|llvmpipe|software/i.test(this.engine.getGlInfo().renderer);
+    this.engine.setHardwareScalingLevel(this.software?2:1/Math.min(window.devicePixelRatio,1.25));
     this.scene=new Scene(this.engine);this.scene.clearColor=new Color4(.035,.065,.09,1);
     this.scene.fogMode=Scene.FOGMODE_EXP2;this.scene.fogDensity=.0024;this.scene.fogColor=new Color3(.16,.22,.26);
     this.scene.imageProcessingConfiguration.toneMappingEnabled=true;this.scene.imageProcessingConfiguration.toneMappingType=ImageProcessingConfiguration.TONEMAPPING_ACES;
@@ -54,7 +70,7 @@ export class Arena {
     this.camera=new FreeCamera('broadcast-camera',this.cameraPosition.clone(),this.scene);this.camera.minZ=.1;this.camera.maxZ=600;this.camera.fov=.83;this.camera.setTarget(this.cameraTarget);
     const ambient=new HemisphericLight('stadium-ambient',new Vector3(0,1,0),this.scene);ambient.intensity=.85;ambient.diffuse=new Color3(.78,.86,1);ambient.groundColor=new Color3(.18,.23,.2);
     const key=new DirectionalLight('floodlight-key',new Vector3(.45,-1,.3),this.scene);key.position=new Vector3(-30,48,-25);key.intensity=2.5;key.diffuse=new Color3(1,.9,.74);key.shadowMinZ=1;key.shadowMaxZ=160;key.orthoLeft=-32;key.orthoRight=32;key.orthoTop=32;key.orthoBottom=-32;
-    this.shadow=new ShadowGenerator(1024,key);this.shadow.usePercentageCloserFiltering=true;this.shadow.filteringQuality=ShadowGenerator.QUALITY_LOW;this.shadow.bias=.0005;this.shadow.normalBias=.015;this.shadow.darkness=.35;
+    this.shadow=new ShadowGenerator(1024,key);this.shadow.usePercentageCloserFiltering=!this.software;this.shadow.filteringQuality=ShadowGenerator.QUALITY_LOW;this.shadow.bias=.0005;this.shadow.normalBias=.015;this.shadow.darkness=.35;
     const fill=new DirectionalLight('stadium-fill',new Vector3(-.5,-1,-.2),this.scene);fill.intensity=.5;fill.diffuse=new Color3(.7,.85,1);
     this.sky();
     this.stadium=buildStadium(this.scene);
@@ -65,12 +81,12 @@ export class Arena {
     positions.forEach((p,i)=>{const f=new Cricketer(this.scene,'fielder-'+i,'#c38c55',String(12+i));f.root.position.set(p[0],0,p[1]);f.root.rotation.y=Math.atan2(-p[0],-p[1])+Math.PI;this.fielders.push(f);this.homes.push(f.root.position.clone());});
     const keeper=new Cricketer(this.scene,'keeper','#c38c55','01');keeper.root.position.set(0,-.12,13);keeper.root.scaling.y=.92;
     const umpire=new Cricketer(this.scene,'umpire','#e2dfcc','');umpire.root.position.set(-.5,0,-12.5);umpire.root.rotation.y=Math.PI;
-    for(const actor of [this.batter,this.bowler,this.partner,keeper,umpire,...this.fielders])for(const mesh of actor.meshes)this.shadow.addShadowCaster(mesh);
+    for(const actor of [this.batter,this.bowler,this.partner,keeper,umpire])for(const mesh of actor.meshes)this.shadow.addShadowCaster(mesh);
     this.ball=MeshBuilder.CreateSphere('cricket-ball',{diameter:.11,segments:16},this.scene);this.ball.material=material(this.scene,'ball-red','#c93035',.15);this.shadow.addShadowCaster(this.ball);
     const seam=MeshBuilder.CreateTorus('ball-seam',{diameter:.112,thickness:.008,tessellation:24},this.scene);seam.material=material(this.scene,'ball-seam-white','#ecbd9c');seam.parent=this.ball;seam.rotation.z=.6;
     this.ballShadow=MeshBuilder.CreateDisc('ball-ground-marker',{radius:.12,tessellation:16,sideOrientation:Mesh.DOUBLESIDE},this.scene);this.ballShadow.rotation.x=Math.PI/2;
     const shadowMat=material(this.scene,'ball-shadow','#07110d');shadowMat.alpha=.34;this.ballShadow.material=shadowMat;
-    const pipeline=new DefaultRenderingPipeline('broadcast-grade',true,this.scene,[this.camera]);pipeline.fxaaEnabled=true;pipeline.samples=1;pipeline.bloomEnabled=true;pipeline.bloomThreshold=1.6;pipeline.bloomWeight=.14;pipeline.bloomKernel=32;pipeline.bloomScale=.35;
+    const pipeline=this.pipeline=new DefaultRenderingPipeline('broadcast-grade',true,this.scene,[this.camera]);pipeline.fxaaEnabled=true;pipeline.samples=1;pipeline.bloomEnabled=!this.software;pipeline.bloomThreshold=1.6;pipeline.bloomWeight=.14;pipeline.bloomKernel=32;pipeline.bloomScale=.35;
     this.resize=new ResizeObserver(()=>this.engine.resize());this.resize.observe(canvas);
     this.engine.runRenderLoop(()=>this.render());
   }
@@ -79,7 +95,7 @@ export class Arena {
     const sky=MeshBuilder.CreateSphere('dusk-sky',{diameter:500,segments:24,sideOrientation:Mesh.BACKSIDE},this.scene);
     const shader=new ShaderMaterial('dusk-gradient',this.scene,{
       vertexSource:'precision highp float; attribute vec3 position; uniform mat4 worldViewProjection; varying vec3 p; void main(){p=position;gl_Position=worldViewProjection*vec4(position,1.0);}',
-      fragmentSource:'precision highp float; varying vec3 p; void main(){vec3 n=normalize(p);float h=clamp(n.y*2.2,0.0,1.0);vec3 color=mix(vec3(0.32,0.36,0.39),vec3(0.025,0.065,0.12),pow(h,0.55));float sun=pow(max(0.0,dot(n,normalize(vec3(-1.0,0.12,-0.7)))),14.0);color+=vec3(0.28,0.12,0.035)*sun;gl_FragColor=vec4(color,1.0);}'
+      fragmentSource:'precision highp float; varying vec3 p; void main(){vec3 n=normalize(p);float h=clamp(n.y*2.2,0.0,1.0);vec3 color=mix(vec3(0.13,0.19,0.23),vec3(0.012,0.032,0.075),pow(h,0.55));float sun=pow(max(0.0,dot(n,normalize(vec3(-1.0,0.12,-0.7)))),14.0);color+=vec3(0.12,0.055,0.022)*sun;gl_FragColor=vec4(color,1.0);}'
     },{attributes:['position'],uniforms:['worldViewProjection']});shader.backFaceCulling=false;shader.disableDepthWrite=true;sky.material=shader;sky.infiniteDistance=true;sky.isPickable=false;
   }
 
@@ -89,7 +105,7 @@ export class Arena {
   seek(index:number) {if(!this.match)return;this.current=clamp(index,0,this.match.events.length-1);this.time=0;this.finished=false;this.hasStarted=true;this.struck=false;this.resetActors();}
   setCamera(mode:CameraMode){this.mode=mode;}
   setSpeed(speed:number){this.speed=speed;}
-  setQuality(high:boolean){this.quality=high?'high':'balanced';this.engine.setHardwareScalingLevel(high?1/Math.min(window.devicePixelRatio,2):1/Math.min(window.devicePixelRatio,1.25));this.shadow.filteringQuality=high?ShadowGenerator.QUALITY_MEDIUM:ShadowGenerator.QUALITY_LOW;}
+  setQuality(high:boolean){this.quality=high?'high':'balanced';this.engine.setHardwareScalingLevel(high?1/Math.min(window.devicePixelRatio,2):this.software?2:1/Math.min(window.devicePixelRatio,1.25));this.shadow.filteringQuality=high?ShadowGenerator.QUALITY_MEDIUM:ShadowGenerator.QUALITY_LOW;this.shadow.usePercentageCloserFiltering=high||!this.software;this.pipeline.bloomEnabled=high||!this.software;}
   setSound(enabled:boolean){this.sound=enabled;if(enabled){this.audio??=new AudioContext();void this.audio.resume();}}
 
   private resetActors(){
@@ -143,7 +159,7 @@ export class Arena {
   }
 
   private render(){
-    const now=performance.now(),elapsed=this.lastFrame?(now-this.lastFrame)/1000:0,delta=Math.min(elapsed,.1);this.lastFrame=now;
+    const now=performance.now(),elapsed=this.lastFrame?(now-this.lastFrame)/1000:0,delta=document.hidden?0:Math.min(elapsed,1);this.lastFrame=now;
     if(delta>0){this.frameTimes.push(elapsed*1000);if(this.frameTimes.length>1800)this.frameTimes.shift();}
     if(this.match){
       if(this.playing){this.time+=delta*this.speed;const event=this.match.events[this.current];if(this.time>=event.duration){if(this.current<this.match.events.length-1){this.time-=event.duration;this.current++;this.struck=false;this.resetActors();}else{this.time=event.duration;this.playing=false;this.finished=true;}}}
@@ -159,6 +175,6 @@ export class Arena {
     if(this.frames===3)document.querySelector('canvas')!.dataset.ready='true';
   }
 
-  diagnostics(){const times=[...this.frameTimes].sort((a,b)=>a-b);return {engine:'Babylon.js',rendering:'browser WebGL',quality:this.quality,width:this.engine.getRenderWidth(),height:this.engine.getRenderHeight(),renderer:this.engine.getGlInfo().renderer,frames:this.frames,sample_frames:times.length,median_ms:times.length?times[Math.floor(times.length*.5)]:null,p95_ms:times.length?times[Math.floor(times.length*.95)]:null,current_fps:Math.round(this.engine.getFps()),camera:this.mode,ball:this.ball.position.asArray(),batter:this.batter.root.position.asArray(),note:'Measured on this browser. A 60 FPS target is not a guarantee; software-rendered tests do not establish GPU performance.'};}
+  diagnostics(){const times=[...this.frameTimes].sort((a,b)=>a-b);return {engine:'Babylon.js',rendering:'browser WebGL',quality:this.quality,software_renderer:this.software,active_meshes:this.scene.getActiveMeshes().length,width:this.engine.getRenderWidth(),height:this.engine.getRenderHeight(),renderer:this.engine.getGlInfo().renderer,frames:this.frames,sample_frames:times.length,median_ms:times.length?times[Math.floor(times.length*.5)]:null,p95_ms:times.length?times[Math.floor(times.length*.95)]:null,current_fps:Math.round(this.engine.getFps()),camera:this.mode,ball:this.ball.position.asArray(),batter:this.batter.root.position.asArray(),note:'Measured on this browser. A 60 FPS target is not a guarantee; software-rendered tests do not establish GPU performance.'};}
   dispose(){this.resize.disconnect();this.engine.stopRenderLoop();this.audio?.close();this.scene.dispose();this.engine.dispose();}
 }
