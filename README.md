@@ -2,6 +2,8 @@
 
 A cricket learning experiment with persistent players and an animated Babylon.js stadium. Watch a six-ball exhibition, create a player within a 100-coin budget, train its shot-selection policy, and replay saved challenges.
 
+The [product requirements document](docs/REQUIREMENTS.md) defines the full game vision, proposed MVP scope, acceptance criteria and milestones.
+
 The renderer runs on the viewer's device. FastAPI supplies the saved outcomes and ball trajectories; PostgreSQL stores the club, players, learning reports and matches. This makes Render + Supabase a practical temporary host without a rendering GPU server.
 
 ## Run
