@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "name": "cover-drive-visual-prototype",
+  "status": "preproduction",
+  "origin": "authored_visual_scenario",
+  "agent_evaluation": false,
+  "engine_footage_produced": false,
+  "target_output": {
+    "width": 1920,
+    "height": 1080,
+    "fps_numerator": 60,
+    "fps_denominator": 1,
+    "total_frames": 1800,
+    "frame_intervals": "start-inclusive, end-exclusive",
+    "real_time_performance_verified": false
+  },
+  "delivery": {
+    "batter_hand": "right",
+    "bowler_arm": "right",
+    "shot": "front-foot cover drive",
+    "runs": 4,
+    "wicket": false,
+    "release_frame": 630,
+    "planned_contact_frame": 669,
+    "score_update_frame": 882,
+    "final_score": "4/0",
+    "final_overs": "0.1"
+  },
+  "shots": [
+    {"id": "S01", "start": 0, "end": 240, "camera": "wide", "action": "establish stadium, pitch and actors"},
+    {"id": "S02", "start": 240, "end": 630, "camera": "end-on", "action": "run-up, gather and delivery stride"},
+    {"id": "S03", "start": 630, "end": 669, "camera": "end-on", "action": "release and bounce"},
+    {"id": "S04", "start": 669, "end": 882, "camera": "cover-side follow", "action": "contact, drive, field chase and ground boundary"},
+    {"id": "S05", "start": 882, "end": 1050, "camera": "boundary/result", "action": "show result and update score once"},
+    {"id": "S06", "start": 1050, "end": 1650, "camera": "side-on replay", "action": "slow-motion release and contact", "replay_source_start": 630, "replay_source_end": 780, "playback_rate": 0.25, "overlay": "REPLAY", "updates_score": false},
+    {"id": "S07", "start": 1650, "end": 1800, "camera": "settled wide", "action": "finish sequence"}
+  ]
+}

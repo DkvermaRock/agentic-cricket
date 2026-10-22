@@ -4,6 +4,8 @@ A cricket learning experiment with persistent players and an animated Babylon.js
 
 The [product requirements document](docs/REQUIREMENTS.md) defines the full game vision, proposed MVP scope, acceptance criteria and milestones.
 
+The [revised delivery plan](docs/REPLAN.md) starts with visual quality, then agent learning and a verified playable demo. Milestone 1 preparation is underway; deployment troubleshooting remains paused. See the [first delivery sequence](docs/VISUAL_PROTOTYPE.md).
+
 The renderer runs on the viewer's device. FastAPI supplies the saved outcomes and ball trajectories; PostgreSQL stores the club, players, learning reports and matches. This makes Render + Supabase a practical temporary host without a rendering GPU server.
 
 ## Run
