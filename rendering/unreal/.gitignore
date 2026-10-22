@@ -1,0 +1,7 @@
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Content/ThirdParty/
+Content/Generated/
+asset-manifest.local.json

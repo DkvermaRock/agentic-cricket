@@ -38,9 +38,9 @@ Prefer a shared skeleton or a documented retargeting path. Verify foot plant, ha
 
 ## Runtime and sourcing check
 
-The current workspace has Blender and ffmpeg. It has no Unreal editor executable, NVIDIA/DRI rendering device, cricket asset files or authenticated AWS profile. It cannot presently execute the recommended Unreal scene or certify GPU performance.
+The current workspace has Blender and ffmpeg. AWS browser sign-in and an STS identity check now succeed. It still has no Unreal editor executable, NVIDIA/DRI rendering device or acquired cricket asset files, so it cannot presently execute the recommended Unreal scene or certify GPU performance. An [Unreal starter and read-only AWS readiness checker](AWS_VISUAL_PROTOTYPE.md) are prepared.
 
-Official reference destinations are [Unreal Linux requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine), [Unreal downloads](https://www.unrealengine.com/en-US/download) and the [Fab cricket catalog search](https://www.fab.com/search?q=cricket). Initial documentation/catalog requests were blocked by the environment proxy with HTTP 403. Required domains have been added to the saved environment draft; that save does not prove runtime access. No specific purchasable pack, current price or license has been verified.
+Official reference destinations are [Unreal Linux requirements](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-requirements-for-unreal-engine), [Unreal downloads](https://www.unrealengine.com/en-US/download) and the [Fab cricket catalog search](https://www.fab.com/search?q=cricket). These pages are now accessible. Candidate listing prices, machine price quotes and motion descriptions are recorded in the readiness document; no asset has been purchased or validated in the editor. The user still needs an Epic account. Ohio EC2 queries now work and a suitable image/type is identified; the current GPU quota is zero and the request for 8 vCPUs is pending. An organization policy denies EC2 queries in `us-east-1`, so Ohio is the selected region for further preparation.
 
 The next execution prerequisite is either an accessible Unreal-capable GPU machine with appropriate licensing/assets, or an explicitly chosen alternative rendering route. The user selected **up to US$300 total** for planning the first prototype. This is a ceiling, not a production estimate or a guarantee that suitable cricket animation can be obtained within it. The budget question explicitly did not authorize purchases.
 
@@ -55,7 +55,7 @@ The next execution prerequisite is either an accessible Unreal-capable GPU machi
 
 The caps can be rebalanced within the total only after actual options are known. Do not provision a continuously running streaming service for this recorded prototype. A short rendering session can be stopped after exporting the review footage, and the video can be distributed separately.
 
-The next decision packet must identify one specific asset/motion set and one accessible rendering machine, including license terms, full cost and remaining allowance. No exact pack or provider price is currently verified, so there is no purchase proposal ready to approve yet. A production cricket title or guaranteed broadcast realism is outside this US$300 feasibility budget.
+The next execution packet must identify a usable asset/motion set and an accessible rendering machine, including license terms, full cost and remaining allowance. Candidate asset and machine prices are known, but complete motion coverage, usable GPU quota and EC2 access are not established. The user has requested continued work and notification before paid resources are created. A production cricket title or guaranteed broadcast realism is outside this US$300 feasibility budget.
 
 ## Review and completion
 

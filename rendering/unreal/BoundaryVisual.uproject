@@ -1,0 +1,13 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.7",
+  "Category": "Film & Television",
+  "Description": "Boundary first-delivery visual prototype. Starter project; cricket assets and sequence are not yet installed.",
+  "Plugins": [
+    {"Name": "PythonScriptPlugin", "Enabled": true},
+    {"Name": "EditorScriptingUtilities", "Enabled": true},
+    {"Name": "SequencerScripting", "Enabled": true},
+    {"Name": "MovieRenderPipeline", "Enabled": true}
+  ],
+  "TargetPlatforms": ["Linux", "Windows"]
+}

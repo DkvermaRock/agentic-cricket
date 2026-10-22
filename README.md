@@ -6,6 +6,8 @@ The [product requirements document](docs/REQUIREMENTS.md) defines the full game 
 
 The [revised delivery plan](docs/REPLAN.md) starts with visual quality, then agent learning and a verified playable demo. Milestone 1 preparation is underway; deployment troubleshooting remains paused. See the [first delivery sequence](docs/VISUAL_PROTOTYPE.md).
 
+The [remote visual prototype preparation](docs/AWS_VISUAL_PROTOTYPE.md) now includes an Unreal starter project, researched asset candidates and a read-only AWS quota/cost checker. AWS sign-in is verified; no remote GPU, acquired cricket assets or Unreal footage exists yet.
+
 The renderer runs on the viewer's device. FastAPI supplies the saved outcomes and ball trajectories; PostgreSQL stores the club, players, learning reports and matches. This makes Render + Supabase a practical temporary host without a rendering GPU server.
 
 ## Run

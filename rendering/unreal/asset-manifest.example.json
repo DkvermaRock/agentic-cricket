@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "status": "assets_missing",
+  "engine_version_target": "5.7",
+  "shot_plan": "../../docs/visual-shot-plan.json",
+  "units": "Unreal centimeters",
+  "batter": {
+    "skeletal_mesh": null,
+    "idle_animation": null,
+    "cover_drive_animation": null,
+    "contact_time_in_clip_seconds": null,
+    "bat_attachment_socket": null,
+    "license_evidence": null
+  },
+  "bowler": {
+    "skeletal_mesh": null,
+    "runup_delivery_animation": null,
+    "release_time_in_clip_seconds": null,
+    "ball_attachment_socket": null,
+    "license_evidence": null
+  },
+  "fielders": {
+    "skeletal_mesh": null,
+    "ready_animation": null,
+    "chase_animation": null,
+    "license_evidence": null
+  },
+  "checks": {
+    "rig_and_animation_compatibility_verified": false,
+    "legal_bowling_action_reviewed": false,
+    "foot_plant_and_bat_grip_reviewed": false,
+    "license_and_redistribution_reviewed": false
+  }
+}
